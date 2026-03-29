@@ -161,18 +161,19 @@ def subir_version(fase_id):
     ultima = Version.query.filter_by(phase_id=fase_id).order_by(Version.number.desc()).first()
     numero = (ultima.number + 1) if ultima else 1
 
-    # Guardar archivo
-    upload_folder = os.path.join('app', 'static', 'uploads', str(proyecto.id), str(fase_id))
-    os.makedirs(upload_folder, exist_ok=True)
-
-    filename = secure_filename(f"v{numero}_{archivo.filename}")
-    filepath = os.path.join(upload_folder, filename)
-    archivo.save(filepath)
+    # Subir a Cloudinary
+    import cloudinary.uploader
+    resultado = cloudinary.uploader.upload(
+        archivo,
+        resource_type='video',  # Cloudinary usa 'video' para audio también
+        folder=f'studio_track/{proyecto.id}/{fase_id}',
+        public_id=f'v{numero}_{secure_filename(archivo.filename)}'
+    )
 
     version = Version(
         number=numero,
-        filename=filename,
-        file_path=filepath,
+        filename=archivo.filename,
+        file_path=resultado['secure_url'],
         notes=notas,
         phase_id=fase_id,
         uploaded_by=current_user.id
@@ -182,7 +183,7 @@ def subir_version(fase_id):
 
     flash(f'Versión {numero} subida con éxito.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
-
+    
 # --- Agregar comentario ---
 @projects_bp.route('/version/<int:version_id>/comentar', methods=['POST'])
 @login_required

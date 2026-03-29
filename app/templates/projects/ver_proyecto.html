@@ -25,7 +25,7 @@
 
             {% if fase.versions %}
                 {% for version in fase.versions|sort(attribute='number') %}
-                {% set audio_url = url_for('static', filename='uploads/' + proyecto.id|string + '/' + fase.id|string + '/' + version.filename) %}
+                {% set audio_url = version.file_path %}
                 {% set comentar_url = url_for('projects.comentar', version_id=version.id) %}
                 <div style="border-top:1px solid #f5f5f5; padding:14px 0 8px;">
 
