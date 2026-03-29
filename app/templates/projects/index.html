@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Mis proyectos — Studio Track{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+    <div>
+        <h2 style="font-size:22px; font-weight:600;">Mis proyectos</h2>
+        <p style="font-size:14px; color:#888; margin-top:4px;">
+            {% if current_user.role == 'producer' %}
+                Proyectos que estás produciendo
+            {% else %}
+                Proyectos en los que participas
+            {% endif %}
+        </p>
+    </div>
+    {% if current_user.role == 'producer' %}
+        <a href="{{ url_for('projects.nuevo_proyecto') }}" class="btn btn-primary"
+           style="width:auto; margin-top:0;">
+            + Nuevo proyecto
+        </a>
+    {% endif %}
+</div>
+
+{% if projects %}
+    <div style="display:grid; gap:12px;">
+        {% for proyecto in projects %}
+        <a href="{{ url_for('projects.ver_proyecto', proyecto_id=proyecto.id) }}"
+           style="text-decoration:none; color:inherit;">
+            <div style="background:white; border:1px solid #ebebeb; border-radius:12px;
+                        padding:20px 24px; display:flex; justify-content:space-between;
+                        align-items:center; transition: border-color 0.15s, box-shadow 0.15s;"
+                 onmouseover="this.style.borderColor='#c7c4f0'; this.style.boxShadow='0 2px 8px rgba(90,82,213,0.08)'"
+                 onmouseout="this.style.borderColor='#ebebeb'; this.style.boxShadow='none'">
+                <div>
+                    <div style="font-size:15px; font-weight:600; color:#1a1a1a;">
+                        {{ proyecto.name }}
+                    </div>
+                    {% if proyecto.description %}
+                        <div style="font-size:13px; color:#888; margin-top:4px;">
+                            {{ proyecto.description }}
+                        </div>
+                    {% endif %}
+                    <div style="font-size:12px; color:#bbb; margin-top:8px; display:flex; gap:16px;">
+                        <span>{{ proyecto.phases|length }} fases</span>
+                        <span>{{ proyecto.participants|length }} artistas</span>
+                        <span>Creado {{ proyecto.created_at.strftime('%d/%m/%Y') }}</span>
+                    </div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                     style="flex-shrink:0; margin-left:16px;">
+                    <path d="M6 3l5 5-5 5" stroke="#bbb" stroke-width="1.5"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="background:white; border:1px solid #ebebeb; border-radius:12px;
+                padding:60px 24px; text-align:center;">
+        <div style="width:40px; height:40px; background:#f0effe; border-radius:10px;
+                    margin:0 auto 16px; display:flex; align-items:center; justify-content:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 4v12M4 10h12" stroke="#5a52d5" stroke-width="1.5"
+                      stroke-linecap="round"/>
+            </svg>
+        </div>
+        {% if current_user.role == 'producer' %}
+            <p style="font-size:15px; font-weight:500; margin-bottom:8px;">
+                Todavía no tienes proyectos
+            </p>
+            <p style="font-size:13px; color:#888; margin-bottom:20px;">
+                Crea tu primer proyecto y empieza a trabajar con tus artistas
+            </p>
+            <a href="{{ url_for('projects.nuevo_proyecto') }}" class="btn btn-primary"
+               style="width:auto; display:inline-block; margin-top:0;">
+                Crear proyecto
+            </a>
+        {% else %}
+            <p style="font-size:15px; font-weight:500; margin-bottom:8px;">
+                Todavía no estás en ningún proyecto
+            </p>
+            <p style="font-size:13px; color:#888;">
+                Pídele al productor que te agregue por tu username
+            </p>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}

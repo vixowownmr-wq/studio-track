@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Registro — Studio Track{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h2>Crear cuenta</h2>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(placeholder="tu_nombre") }}
+            {% if form.username.errors %}
+                <p class="field-error">{{ form.username.errors[0] }}</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(placeholder="tu@email.com") }}
+            {% if form.email.errors %}
+                <p class="field-error">{{ form.email.errors[0] }}</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(placeholder="mínimo 6 caracteres") }}
+            {% if form.password.errors %}
+                <p class="field-error">{{ form.password.errors[0] }}</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.password2.label }}
+            {{ form.password2(placeholder="repite la contraseña") }}
+            {% if form.password2.errors %}
+                <p class="field-error">{{ form.password2.errors[0] }}</p>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.role.label }}
+            {{ form.role() }}
+        </div>
+
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    <p class="form-footer">
+        ¿Ya tienes cuenta? <a href="{{ url_for('auth.login') }}">Inicia sesión</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+{% block title %}{{ proyecto.name }} — Studio Track{% endblock %}
+
+{% block content %}
+
+<div style="margin-bottom:28px;">
+    <a href="{{ url_for('projects.index') }}"
+       style="font-size:13px; color:#888; text-decoration:none;">← Mis proyectos</a>
+    <h2 style="font-size:22px; margin-top:8px; font-weight:600;">{{ proyecto.name }}</h2>
+    {% if proyecto.description %}
+        <p style="color:#888; font-size:14px; margin-top:4px;">{{ proyecto.description }}</p>
+    {% endif %}
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 260px; gap:24px; align-items:start;">
+
+    <div>
+        {% for fase in proyecto.phases|sort(attribute='order') %}
+        <div style="background:white; border:1px solid #ebebeb; border-radius:12px; padding:20px 24px; margin-bottom:14px;">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <span style="font-size:15px; font-weight:600;">{{ fase.name }}</span>
+                <span style="font-size:12px; color:#bbb;">{{ fase.versions|length }} versiones</span>
+            </div>
+
+            {% if fase.versions %}
+                {% for version in fase.versions|sort(attribute='number') %}
+                {% set audio_url = url_for('static', filename='uploads/' + proyecto.id|string + '/' + fase.id|string + '/' + version.filename) %}
+                {% set comentar_url = url_for('projects.comentar', version_id=version.id) %}
+                <div style="border-top:1px solid #f5f5f5; padding:14px 0 8px;">
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:12px; font-weight:600; background:#f0effe; color:#5a52d5; padding:2px 8px; border-radius:4px;">
+                                v{{ version.number }}
+                            </span>
+                            <span style="font-size:13px; color:#555;">{{ version.filename }}</span>
+                        </div>
+                        <span style="font-size:11px; color:#bbb;">
+                            {{ version.uploaded_at.strftime('%d/%m/%Y') }} · {{ version.uploader.username }}
+                        </span>
+                    </div>
+
+                    {% if version.notes %}
+                        <p style="font-size:12px; color:#888; margin-bottom:10px;">{{ version.notes }}</p>
+                    {% endif %}
+
+                    <div style="display:flex; align-items:center; gap:10px; background:#f9f9f9; border-radius:8px; padding:8px 12px;">
+                        <button onclick="togglePlay(this, '{{ audio_url }}', '{{ version.id }}')"
+                                id="btn-{{ version.id }}"
+                                style="width:30px; height:30px; border-radius:50%; background:#5a52d5; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <svg id="icon-{{ version.id }}" width="12" height="12" viewBox="0 0 12 12" fill="white">
+                                <polygon points="1,0 11,6 1,12"/>
+                            </svg>
+                        </button>
+
+                        <div style="flex:1;">
+                            <div style="height:3px; background:#e5e5e5; border-radius:2px; cursor:pointer; position:relative;"
+                                 onclick="seekAudio(this, event, '{{ version.id }}')">
+                                <div id="progress-{{ version.id }}"
+                                     style="height:100%; background:#5a52d5; border-radius:2px; width:0%; transition:width 0.1s;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:11px; color:#bbb; margin-top:4px;">
+                                <span id="time-{{ version.id }}">0:00</span>
+                                <span id="dur-{{ version.id }}">--:--</span>
+                            </div>
+                        </div>
+
+                        <a href="{{ audio_url }}"
+                           download
+                           style="font-size:12px; color:#5a52d5; text-decoration:none; padding:4px 8px; border:1px solid #d0ccf5; border-radius:4px; white-space:nowrap;">
+                            ↓ descargar
+                        </a>
+                    </div>
+
+                    <div style="margin-top:10px; padding-left:4px;">
+                        <div id="comments-{{ version.id }}">
+                            {% for comentario in version.comments|sort(attribute='created_at') %}
+                            <div style="padding:8px 0; border-top:1px solid #f5f5f5;">
+                                <span style="font-size:12px; font-weight:600; color:#333;">{{ comentario.user.username }}</span>
+                                <span style="font-size:11px; color:#bbb; margin-left:6px;">{{ comentario.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                <p style="font-size:13px; color:#555; margin-top:3px;">{{ comentario.content }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <input type="text"
+                                   id="input-{{ version.id }}"
+                                   placeholder="Escribe un comentario..."
+                                   style="flex:1; font-size:13px; padding:7px 10px; border:1px solid #eee; border-radius:6px;">
+                            <button onclick="enviarComentario('{{ version.id }}', '{{ comentar_url }}')"
+                                    style="font-size:12px; padding:7px 14px; border:1px solid #eee; border-radius:6px; background:none; cursor:pointer; color:#333;">
+                                Enviar
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="font-size:13px; color:#ccc; padding:8px 0;">Sin versiones todavía.</p>
+            {% endif %}
+
+            {% if es_productor %}
+            <form method="POST"
+                  action="{{ url_for('projects.subir_version', fase_id=fase.id) }}"
+                  enctype="multipart/form-data"
+                  style="margin-top:16px; padding-top:16px; border-top:1px solid #f0f0f0; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <input type="file" name="archivo" accept=".mp3,.wav,.aiff,.flac,.ogg,.m4a"
+                       style="font-size:12px; flex:1; min-width:180px;">
+                <input type="text" name="notas" placeholder="Notas (opcional)"
+                       style="font-size:12px; flex:1; min-width:140px; padding:7px 10px; border:1px solid #eee; border-radius:6px;">
+                <button type="submit"
+                        style="font-size:12px; padding:7px 14px; border:1px solid #eee; border-radius:6px; background:#5a52d5; color:white; cursor:pointer; white-space:nowrap;">
+                    + Subir
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+        {% if es_productor %}
+        <form method="POST"
+              action="{{ url_for('projects.nueva_fase', proyecto_id=proyecto.id) }}"
+              style="display:flex; gap:8px; margin-top:4px;">
+            <input type="text" name="nombre_fase" placeholder="Nueva fase (ej: Revisión final)"
+                   style="flex:1; font-size:13px; padding:8px 12px; border:1px solid #eee; border-radius:8px;">
+            <button type="submit"
+                    style="font-size:13px; padding:8px 16px; border:1px solid #eee; border-radius:8px; background:none; cursor:pointer; color:#555;">
+                + Agregar fase
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if es_productor %}
+    <div style="background:white; border:1px solid #ebebeb; border-radius:12px; padding:20px;">
+        <p style="font-size:14px; font-weight:600; margin-bottom:14px;">Artistas</p>
+
+        {% if proyecto.participants %}
+            {% for p in proyecto.participants %}
+            <div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f5f5f5;">
+                <div style="width:28px; height:28px; border-radius:50%; background:#f0effe; color:#5a52d5; font-size:11px; font-weight:600; display:flex; align-items:center; justify-content:center;">
+                    {{ p.user.username[0]|upper }}
+                </div>
+                <span style="font-size:13px; color:#333;">{{ p.user.username }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-size:13px; color:#ccc; margin-bottom:14px;">Sin artistas todavía.</p>
+        {% endif %}
+
+        <form method="POST"
+              action="{{ url_for('projects.agregar_artista', proyecto_id=proyecto.id) }}"
+              style="margin-top:14px;">
+            <input type="text" name="username" placeholder="Username del artista"
+                   style="font-size:13px; padding:8px 10px; border:1px solid #eee; border-radius:6px; width:100%; margin-bottom:8px;">
+            <button type="submit"
+                    style="font-size:13px; padding:8px; border:1px solid #eee; border-radius:6px; background:none; cursor:pointer; width:100%; color:#555;">
+                + Agregar
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+const audios = {};
+
+function togglePlay(btn, src, vid) {
+    if (!audios[vid]) {
+        audios[vid] = new Audio(src);
+
+        audios[vid].addEventListener('timeupdate', () => {
+            const audio = audios[vid];
+            if (!audio.duration) return;
+            const pct = (audio.currentTime / audio.duration) * 100;
+            const progressEl = document.getElementById('progress-' + vid);
+            const timeEl = document.getElementById('time-' + vid);
+            if (progressEl) progressEl.style.width = pct + '%';
+            if (timeEl) timeEl.textContent = formatTime(audio.currentTime);
+        });
+
+        audios[vid].addEventListener('loadedmetadata', () => {
+            const durEl = document.getElementById('dur-' + vid);
+            if (durEl) durEl.textContent = formatTime(audios[vid].duration);
+        });
+
+        audios[vid].addEventListener('ended', () => {
+            setPlayIcon(vid);
+            const progressEl = document.getElementById('progress-' + vid);
+            const timeEl = document.getElementById('time-' + vid);
+            if (progressEl) progressEl.style.width = '0%';
+            if (timeEl) timeEl.textContent = '0:00';
+        });
+    }
+
+    const audio = audios[vid];
+
+    Object.keys(audios).forEach(key => {
+        if (key !== vid && !audios[key].paused) {
+            audios[key].pause();
+            setPlayIcon(key);
+        }
+    });
+
+    if (audio.paused) {
+        audio.play();
+        setPauseIcon(vid);
+    } else {
+        audio.pause();
+        setPlayIcon(vid);
+    }
+}
+
+function setPlayIcon(vid) {
+    const svg = document.getElementById('icon-' + vid);
+    if (!svg) return;
+    svg.innerHTML = '<polygon points="1,0 11,6 1,12" fill="white"/>';
+}
+
+function setPauseIcon(vid) {
+    const svg = document.getElementById('icon-' + vid);
+    if (!svg) return;
+    svg.innerHTML = '<rect x="1" y="0" width="3" height="12" fill="white"/><rect x="8" y="0" width="3" height="12" fill="white"/>';
+}
+
+function seekAudio(bar, e, vid) {
+    const rect = bar.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const fill = document.getElementById('progress-' + vid);
+    if (fill) fill.style.width = (pct * 100) + '%';
+    if (audios[vid] && audios[vid].duration) {
+        audios[vid].currentTime = pct * audios[vid].duration;
+    }
+}
+
+function formatTime(s) {
+    if (!s || isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+}
+
+async function enviarComentario(versionId, url) {
+    const input = document.getElementById('input-' + versionId);
+    const contenido = input.value.trim();
+    if (!contenido) return;
+
+    const formData = new FormData();
+    formData.append('contenido', contenido);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+
+    if (response.ok) {
+        const container = document.getElementById('comments-' + versionId);
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:8px 0; border-top:1px solid #f5f5f5;';
+        div.innerHTML = `
+            <span style="font-size:12px; font-weight:600; color:#333;">{{ current_user.username }}</span>
+            <span style="font-size:11px; color:#bbb; margin-left:6px;">ahora</span>
+            <p style="font-size:13px; color:#555; margin-top:3px;">${contenido}</p>
+        `;
+        container.appendChild(div);
+        input.value = '';
+    }
+}
+</script>
+
+{% endblock %}
