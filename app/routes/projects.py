@@ -257,3 +257,20 @@ def eliminar_version(version_id):
 
     flash('Versión eliminada.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+@projects_bp.route('/fase/<int:fase_id>/aprobar', methods=['POST'])
+@login_required
+def aprobar_fase(fase_id):
+    fase = Phase.query.get_or_404(fase_id)
+    proyecto = fase.project
+
+    if proyecto.producer_id != current_user.id:
+        flash('Solo el productor puede aprobar fases.', 'danger')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+    fase.aprobada = not fase.aprobada  # Toggle: aprueba o desaprueba
+    db.session.commit()
+
+    estado = 'aprobada' if fase.aprobada else 'desaprobada'
+    flash(f'Fase "{fase.name}" {estado}.', 'success')
+    return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))

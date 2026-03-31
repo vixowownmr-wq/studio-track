@@ -50,7 +50,8 @@ class Phase(db.Model):
     order = db.Column(db.Integer, default=0)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    aprobada = db.Column(db.Boolean, default=False)
+    
     versions = db.relationship('Version', backref='phase', lazy=True, cascade='all, delete-orphan')
 
 
