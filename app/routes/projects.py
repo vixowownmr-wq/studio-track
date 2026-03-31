@@ -5,6 +5,7 @@ from app.models import Project, ProjectParticipant, Phase, Version, User
 import os
 from werkzeug.utils import secure_filename
 from app.models import Project, ProjectParticipant, Phase, Version, User, Comment
+import cloudinary.uploader
 
 projects_bp = Blueprint('projects', __name__)
 
@@ -215,4 +216,27 @@ def comentar(version_id):
         return 'ok', 200
 
     flash('Comentario agregado.', 'success')
+    return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+@projects_bp.route('/version/<int:version_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_version(version_id):
+    version = Version.query.get_or_404(version_id)
+    proyecto = version.phase.project
+
+    if proyecto.producer_id != current_user.id:
+        flash('Solo el productor puede eliminar versiones.', 'danger')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+    # Eliminar de Cloudinary
+    try:
+        public_id = f'studio_track/{proyecto.id}/{version.phase_id}/v{version.number}_{secure_filename(version.filename)}'
+        cloudinary.uploader.destroy(public_id, resource_type='video')
+    except Exception:
+        pass  # Si falla Cloudinary igual eliminamos de la base de datos
+
+    db.session.delete(version)
+    db.session.commit()
+
+    flash('Versión eliminada.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
