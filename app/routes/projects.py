@@ -1,12 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
-from app.models import Project, ProjectParticipant, Phase, Version, User
-import os
-from werkzeug.utils import secure_filename
 from app.models import Project, ProjectParticipant, Phase, Version, User, Comment
+from werkzeug.utils import secure_filename
 import cloudinary.uploader
-from app.email import enviar_notificacion_version
 from app.email import enviar_notificacion_version, enviar_notificacion_comentario
 
 projects_bp = Blueprint('projects', __name__)
@@ -17,7 +14,6 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# --- Dashboard principal ---
 @projects_bp.route('/')
 def index():
     if current_user.is_authenticated:
@@ -27,11 +23,9 @@ def index():
             participaciones = ProjectParticipant.query.filter_by(user_id=current_user.id).all()
             projects = [p.project for p in participaciones]
         return render_template('projects/index.html', projects=projects)
-    return render_template('landing.html')@projects_bp.route('/')
+    return render_template('landing.html')
 
 
-
-# --- Crear proyecto ---
 @projects_bp.route('/proyecto/nuevo', methods=['GET', 'POST'])
 @login_required
 def nuevo_proyecto():
@@ -54,7 +48,6 @@ def nuevo_proyecto():
         db.session.add(proyecto)
         db.session.commit()
 
-        # Fases por defecto
         fases_default = ['Grabación', 'Maqueta', 'Mezcla', 'Master']
         for i, nombre_fase in enumerate(fases_default):
             fase = Phase(name=nombre_fase, order=i, project_id=proyecto.id)
@@ -67,13 +60,11 @@ def nuevo_proyecto():
     return render_template('projects/nuevo_proyecto.html')
 
 
-# --- Ver proyecto ---
 @projects_bp.route('/proyecto/<int:proyecto_id>')
 @login_required
 def ver_proyecto(proyecto_id):
     proyecto = Project.query.get_or_404(proyecto_id)
 
-    # Verificar acceso
     es_productor = proyecto.producer_id == current_user.id
     es_participante = ProjectParticipant.query.filter_by(
         project_id=proyecto_id, user_id=current_user.id
@@ -88,7 +79,6 @@ def ver_proyecto(proyecto_id):
                            es_productor=es_productor)
 
 
-# --- Agregar artista al proyecto ---
 @projects_bp.route('/proyecto/<int:proyecto_id>/agregar_artista', methods=['POST'])
 @login_required
 def agregar_artista(proyecto_id):
@@ -115,7 +105,6 @@ def agregar_artista(proyecto_id):
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
 
 
-# --- Agregar fase ---
 @projects_bp.route('/proyecto/<int:proyecto_id>/nueva_fase', methods=['POST'])
 @login_required
 def nueva_fase(proyecto_id):
@@ -135,7 +124,6 @@ def nueva_fase(proyecto_id):
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
 
 
-# --- Subir versión ---
 @projects_bp.route('/fase/<int:fase_id>/subir', methods=['POST'])
 @login_required
 def subir_version(fase_id):
@@ -162,15 +150,12 @@ def subir_version(fase_id):
         flash('Formato no permitido. Usa mp3, wav, aiff, flac, ogg o m4a.', 'danger')
         return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
 
-    # Número de versión automático
     ultima = Version.query.filter_by(phase_id=fase_id).order_by(Version.number.desc()).first()
     numero = (ultima.number + 1) if ultima else 1
 
-    # Subir a Cloudinary
-    import cloudinary.uploader
     resultado = cloudinary.uploader.upload(
         archivo,
-        resource_type='video',  # Cloudinary usa 'video' para audio también
+        resource_type='video',
         folder=f'studio_track/{proyecto.id}/{fase_id}',
         public_id=f'v{numero}_{secure_filename(archivo.filename)}'
     )
@@ -186,18 +171,15 @@ def subir_version(fase_id):
     db.session.add(version)
     db.session.commit()
 
-    flash(f'Versión {numero} subida con éxito.', 'success')
-    # Notificar a los artistas
-    # Notificar a los artistas
-    # Notificar al productor
     try:
         enviar_notificacion_version(proyecto, fase, version, proyecto.participants, proyecto.producer.email)
     except Exception as e:
         print(f"ERROR EMAIL: {e}")
+
     flash(f'Versión {numero} subida con éxito.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
 
-# --- Agregar comentario ---
+
 @projects_bp.route('/version/<int:version_id>/comentar', methods=['POST'])
 @login_required
 def comentar(version_id):
@@ -224,7 +206,6 @@ def comentar(version_id):
     db.session.add(comentario)
     db.session.commit()
 
-    # Notificar al productor si quien comenta es un artista
     if current_user.id != proyecto.producer_id:
         try:
             enviar_notificacion_comentario(proyecto, version.phase, version, comentario, proyecto.producer.email)
@@ -237,6 +218,7 @@ def comentar(version_id):
     flash('Comentario agregado.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
 
+
 @projects_bp.route('/version/<int:version_id>/eliminar', methods=['POST'])
 @login_required
 def eliminar_version(version_id):
@@ -247,18 +229,18 @@ def eliminar_version(version_id):
         flash('Solo el productor puede eliminar versiones.', 'danger')
         return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
 
-    # Eliminar de Cloudinary
     try:
         public_id = f'studio_track/{proyecto.id}/{version.phase_id}/v{version.number}_{secure_filename(version.filename)}'
         cloudinary.uploader.destroy(public_id, resource_type='video')
     except Exception:
-        pass  # Si falla Cloudinary igual eliminamos de la base de datos
+        pass
 
     db.session.delete(version)
     db.session.commit()
 
     flash('Versión eliminada.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
 
 @projects_bp.route('/fase/<int:fase_id>/aprobar', methods=['POST'])
 @login_required
@@ -270,7 +252,7 @@ def aprobar_fase(fase_id):
         flash('Solo el productor puede aprobar fases.', 'danger')
         return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
 
-    fase.aprobada = not fase.aprobada  # Toggle: aprueba o desaprueba
+    fase.aprobada = not fase.aprobada
     db.session.commit()
 
     estado = 'aprobada' if fase.aprobada else 'desaprobada'
