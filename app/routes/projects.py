@@ -19,14 +19,24 @@ def allowed_file(filename):
 
 # --- Dashboard principal ---
 @projects_bp.route('/')
-@login_required
 def index():
-    if current_user.role == 'producer':
-        projects = Project.query.filter_by(producer_id=current_user.id).all()
-    else:
-        participaciones = ProjectParticipant.query.filter_by(user_id=current_user.id).all()
-        projects = [p.project for p in participaciones]
-    return render_template('projects/index.html', projects=projects)
+    if current_user.is_authenticated:
+        if current_user.role == 'producer':
+            projects = Project.query.filter_by(producer_id=current_user.id).all()
+        else:
+            participaciones = ProjectParticipant.query.filter_by(user_id=current_user.id).all()
+            projects = [p.project for p in participaciones]
+        return render_template('projects/index.html', projects=projects)
+    return render_template('landing.html')@projects_bp.route('/')
+def index():
+    if current_user.is_authenticated:
+        if current_user.role == 'producer':
+            projects = Project.query.filter_by(producer_id=current_user.id).all()
+        else:
+            participaciones = ProjectParticipant.query.filter_by(user_id=current_user.id).all()
+            projects = [p.project for p in participaciones]
+        return render_template('projects/index.html', projects=projects)
+    return render_template('landing.html')
 
 
 # --- Crear proyecto ---

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Track — Gestiona tus proyectos musicales</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0b; color: #e2e2e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+        .l-nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 48px; border-bottom: 1px solid #1a1a1c; }
+        .l-logo { font-size: 14px; font-weight: 600; color: #e2e2e0; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .l-dot { width: 7px; height: 7px; background: #5a52d5; border-radius: 50%; }
+        .l-nav-r { display: flex; align-items: center; gap: 10px; }
+        .l-link { font-size: 13px; color: #666; text-decoration: none; padding: 6px 12px; }
+        .l-link:hover { color: #aaa; }
+        .l-btn-o { font-size: 13px; color: #aaa; border: 1px solid #222; background: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+        .l-btn-p { font-size: 13px; color: #fff; border: none; background: #5a52d5; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; }
+
+        .hero { padding: 120px 48px 100px; max-width: 760px; margin: 0 auto; }
+        .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #666; border: 1px solid #1e1e20; background: #111; padding: 4px 10px; border-radius: 20px; margin-bottom: 32px; }
+        .badge-dot { width: 5px; height: 5px; background: #5a52d5; border-radius: 50%; }
+        .hero h1 { font-size: 52px; font-weight: 700; line-height: 1.1; letter-spacing: -1.5px; color: #f0f0ee; margin-bottom: 24px; }
+        .hero h1 em { font-style: normal; color: #5a52d5; }
+        .hero p { font-size: 17px; color: #555; line-height: 1.7; max-width: 480px; margin-bottom: 40px; }
+        .hero-cta { display: flex; align-items: center; gap: 12px; }
+        .cta-p { font-size: 14px; font-weight: 500; color: #fff; background: #5a52d5; border: none; padding: 10px 22px; border-radius: 7px; cursor: pointer; text-decoration: none; }
+        .cta-o { font-size: 14px; color: #555; background: none; border: none; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+
+        .divider { height: 1px; background: #1a1a1c; margin: 0 48px; }
+
+        .feat { padding: 80px 48px; max-width: 960px; margin: 0 auto; }
+        .feat-label { font-size: 11px; letter-spacing: 2px; color: #333; text-transform: uppercase; margin-bottom: 48px; }
+        .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #1a1a1c; border: 1px solid #1a1a1c; border-radius: 12px; overflow: hidden; }
+        .feat-item { background: #0a0a0b; padding: 28px; transition: background 0.15s; }
+        .feat-item:hover { background: #0f0f11; }
+        .feat-icon { margin-bottom: 16px; opacity: 0.8; }
+        .feat-item h3 { font-size: 14px; font-weight: 600; color: #d0d0ce; margin-bottom: 8px; }
+        .feat-item p { font-size: 13px; color: #444; line-height: 1.65; }
+
+        .bottom { padding: 80px 48px; border-top: 1px solid #1a1a1c; text-align: center; }
+        .bottom h2 { font-size: 32px; font-weight: 700; letter-spacing: -0.8px; color: #f0f0ee; margin-bottom: 16px; }
+        .bottom p { font-size: 15px; color: #444; margin-bottom: 32px; }
+        .bottom-btn { font-size: 14px; font-weight: 500; color: #fff; background: #5a52d5; border: none; padding: 11px 28px; border-radius: 7px; cursor: pointer; text-decoration: none; display: inline-block; }
+
+        .foot { padding: 20px 48px; border-top: 1px solid #1a1a1c; display: flex; justify-content: space-between; align-items: center; }
+        .foot p { font-size: 12px; color: #2a2a2c; }
+    </style>
+</head>
+<body>
+
+<nav class="l-nav">
+    <a href="/" class="l-logo"><div class="l-dot"></div> Studio Track</a>
+    <div class="l-nav-r">
+        <a href="{{ url_for('auth.login') }}" class="l-btn-o">Entrar</a>
+        <a href="{{ url_for('auth.registro') }}" class="l-btn-p">Registrarse</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <div class="badge"><div class="badge-dot"></div> Para productores y artistas</div>
+    <h1>Gestiona tus proyectos<br>musicales <em>sin caos.</em></h1>
+    <p>Organiza grabaciones, mezclas y masters en un solo lugar. Tu equipo siempre en la misma página.</p>
+    <div class="hero-cta">
+        <a href="{{ url_for('auth.registro') }}" class="cta-p">Empezar gratis</a>
+        <a href="{{ url_for('auth.login') }}" class="cta-o">Ya tengo cuenta →</a>
+    </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="feat">
+    <p class="feat-label">Todo en uno</p>
+    <div class="feat-grid">
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <rect x="2" y="2" width="6" height="6" rx="1.5" fill="#5a52d5"/>
+                    <rect x="10" y="2" width="6" height="6" rx="1.5" fill="#5a52d5" opacity="0.4"/>
+                    <rect x="2" y="10" width="6" height="6" rx="1.5" fill="#5a52d5" opacity="0.4"/>
+                    <rect x="10" y="10" width="6" height="6" rx="1.5" fill="#5a52d5" opacity="0.2"/>
+                </svg>
+            </div>
+            <h3>Fases del proyecto</h3>
+            <p>Grabación, maqueta, mezcla, master. Cada fase con su propio historial.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="7" stroke="#5a52d5" stroke-width="1.5"/>
+                    <polygon points="7,6 13,9 7,12" fill="#5a52d5"/>
+                </svg>
+            </div>
+            <h3>Reproductor inline</h3>
+            <p>Escucha cualquier versión directo en la plataforma. Sin descargar nada.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M3 9h12M9 3l6 6-6 6" stroke="#5a52d5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h3>Control de versiones</h3>
+            <p>v1, v2, v3... cada archivo queda registrado con fecha y notas.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M16 11c0 1.1-.9 2-2 2H6l-4 3V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v7z" stroke="#5a52d5" stroke-width="1.5" fill="none"/>
+                </svg>
+            </div>
+            <h3>Comentarios</h3>
+            <p>Feedback directo en cada versión. Sin emails, sin WhatsApp.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M9 2l2 4 4 .5-3 3 .5 4L9 12l-3.5 1.5.5-4-3-3L7 6z" stroke="#5a52d5" stroke-width="1.5" fill="none"/>
+                </svg>
+            </div>
+            <h3>Aprobación de fases</h3>
+            <p>Marca cada fase como aprobada. Todos saben el estado del proyecto.</p>
+        </div>
+        <div class="feat-item">
+            <div class="feat-icon">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path d="M3 9a6 6 0 1 0 12 0A6 6 0 0 0 3 9z" stroke="#5a52d5" stroke-width="1.5" fill="none"/>
+                    <path d="M9 6v3l2 2" stroke="#5a52d5" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h3>Notificaciones</h3>
+            <p>Email automático cuando se sube una versión o alguien comenta.</p>
+        </div>
+    </div>
+</div>
+
+<div class="bottom">
+    <h2>Empieza hoy, gratis.</h2>
+    <p>Sin tarjeta de crédito. Sin límite de proyectos.</p>
+    <a href="{{ url_for('auth.registro') }}" class="bottom-btn">Crear cuenta</a>
+</div>
+
+<div class="foot">
+    <p>© 2026 Studio Track</p>
+    <p>Hecho para productores.</p>
+</div>
+
+</body>
+</html>
