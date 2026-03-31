@@ -6,6 +6,7 @@ import os
 from werkzeug.utils import secure_filename
 from app.models import Project, ProjectParticipant, Phase, Version, User, Comment
 import cloudinary.uploader
+from app.email import enviar_notificacion_version
 
 projects_bp = Blueprint('projects', __name__)
 
@@ -183,6 +184,11 @@ def subir_version(fase_id):
     db.session.commit()
 
     flash(f'Versión {numero} subida con éxito.', 'success')
+    # Notificar a los artistas
+    try:
+        enviar_notificacion_version(proyecto, fase, version, proyecto.participants)
+    except Exception:
+        pass  # Si falla el email no interrumpe la subida
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
     
 # --- Agregar comentario ---
