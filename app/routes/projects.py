@@ -186,12 +186,12 @@ def subir_version(fase_id):
     flash(f'Versión {numero} subida con éxito.', 'success')
     # Notificar a los artistas
     # Notificar a los artistas
+    # Notificar al productor
     try:
-        enviar_notificacion_version(proyecto, fase, version, proyecto.participants)
+        enviar_notificacion_version(proyecto, fase, version, proyecto.participants, proyecto.producer.email)
     except Exception as e:
         print(f"ERROR EMAIL: {e}")
-    return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
-    
+        
 # --- Agregar comentario ---
 @projects_bp.route('/version/<int:version_id>/comentar', methods=['POST'])
 @login_required
