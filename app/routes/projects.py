@@ -333,3 +333,27 @@ def aceptar_invitacion(token):
     # Si no está logueado, redirigir al registro
     flash('Crea una cuenta o inicia sesión para aceptar la invitación.', 'success')
     return redirect(url_for('auth.registro'))
+
+@projects_bp.route('/proyecto/<int:proyecto_id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_proyecto(proyecto_id):
+    proyecto = Project.query.get_or_404(proyecto_id)
+
+    if proyecto.producer_id != current_user.id:
+        flash('Solo el productor puede eliminar este proyecto.', 'danger')
+        return redirect(url_for('projects.index'))
+
+    # Eliminar archivos de Cloudinary
+    for fase in proyecto.phases:
+        for version in fase.versions:
+            try:
+                public_id = f'studio_track/{proyecto.id}/{fase.id}/v{version.number}_{secure_filename(version.filename)}'
+                cloudinary.uploader.destroy(public_id, resource_type='video')
+            except Exception:
+                pass
+
+    db.session.delete(proyecto)
+    db.session.commit()
+
+    flash(f'Proyecto "{proyecto.name}" eliminado.', 'success')
+    return redirect(url_for('projects.index'))
