@@ -186,13 +186,13 @@
         {% endif %}
 
         <form method="POST"
-              action="{{ url_for('projects.agregar_artista', proyecto_id=proyecto.id) }}"
+              action="{{ url_for('projects.invitar_artista', proyecto_id=proyecto.id) }}"
               style="margin-top:14px;">
-            <input type="text" name="username" placeholder="Username del artista"
+            <input type="email" name="email" placeholder="Email del artista"
                    style="font-size:13px; padding:8px 10px; border:1px solid #eee; border-radius:6px; width:100%; margin-bottom:8px;">
             <button type="submit"
-                    style="font-size:13px; padding:8px; border:1px solid #eee; border-radius:6px; background:none; cursor:pointer; width:100%; color:#555;">
-                + Agregar
+                    style="font-size:13px; padding:8px; border:1px solid #eee; border-radius:6px; background:#5a52d5; color:white; cursor:pointer; width:100%;">
+                + Invitar por email
             </button>
         </form>
     </div>

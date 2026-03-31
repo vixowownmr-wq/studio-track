@@ -77,3 +77,20 @@ class Comment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User')
+
+    import secrets
+
+class Invitation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), nullable=False)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    token = db.Column(db.String(64), unique=True, nullable=False)
+    accepted = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    project = db.relationship('Project')
+
+    def __init__(self, email, project_id):
+        self.email = email
+        self.project_id = project_id
+        self.token = secrets.token_urlsafe(32)

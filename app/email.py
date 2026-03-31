@@ -97,3 +97,44 @@ def enviar_notificacion_comentario(proyecto, fase, version, comentario, producto
         </div>
         """
     })
+
+def enviar_invitacion(proyecto, email, token):
+    resend.api_key = current_app.config['RESEND_API_KEY']
+    link = f"https://studio-track.up.railway.app/invitacion/{token}"
+
+    resend.Emails.send({
+        "from": "Studio Track <onboarding@resend.dev>",
+        "to": email,
+        "subject": f"Te invitaron a un proyecto en Studio Track",
+        "html": f"""
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+            <div style="margin-bottom: 24px;">
+                <span style="font-size: 16px; font-weight: 600;">● Studio Track</span>
+            </div>
+
+            <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 8px;">
+                Te invitaron a un proyecto
+            </h2>
+
+            <p style="font-size: 14px; color: #555; margin-bottom: 24px;">
+                Fuiste invitado a colaborar en <strong>{proyecto.name}</strong>.
+            </p>
+
+            <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 4px;">Proyecto</p>
+                <p style="font-size: 14px; font-weight: 600;">{proyecto.name}</p>
+            </div>
+
+            <a href="{link}"
+               style="display: inline-block; background: #5a52d5; color: white;
+                      text-decoration: none; padding: 10px 20px; border-radius: 7px;
+                      font-size: 14px; font-weight: 500;">
+                Aceptar invitación
+            </a>
+
+            <p style="font-size: 12px; color: #bbb; margin-top: 32px;">
+                Si no esperabas esta invitación puedes ignorar este email.
+            </p>
+        </div>
+        """
+    })

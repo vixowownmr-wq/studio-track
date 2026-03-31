@@ -258,3 +258,78 @@ def aprobar_fase(fase_id):
     estado = 'aprobada' if fase.aprobada else 'desaprobada'
     flash(f'Fase "{fase.name}" {estado}.', 'success')
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+@projects_bp.route('/proyecto/<int:proyecto_id>/invitar', methods=['POST'])
+@login_required
+def invitar_artista(proyecto_id):
+    from app.models import Invitation
+    proyecto = Project.query.get_or_404(proyecto_id)
+
+    if proyecto.producer_id != current_user.id:
+        flash('No tienes permiso.', 'danger')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
+
+    email = request.form.get('email', '').strip().lower()
+    if not email:
+        flash('Ingresa un email válido.', 'danger')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
+
+    # Verificar si ya es participante
+    usuario = User.query.filter_by(email=email).first()
+    if usuario:
+        ya_participa = ProjectParticipant.query.filter_by(
+            project_id=proyecto_id, user_id=usuario.id
+        ).first()
+        if ya_participa:
+            flash('Ese usuario ya está en el proyecto.', 'danger')
+            return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
+
+    # Verificar si ya tiene invitación pendiente
+    invitacion_existente = Invitation.query.filter_by(
+        email=email, project_id=proyecto_id, accepted=False
+    ).first()
+    if invitacion_existente:
+        flash('Ya se envió una invitación a ese email.', 'danger')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
+
+    invitacion = Invitation(email=email, project_id=proyecto_id)
+    db.session.add(invitacion)
+    db.session.commit()
+
+    try:
+        from app.email import enviar_invitacion
+        enviar_invitacion(proyecto, email, invitacion.token)
+        flash(f'Invitación enviada a {email}.', 'success')
+    except Exception as e:
+        print(f"ERROR INVITACION: {e}")
+        flash('Error al enviar la invitación.', 'danger')
+
+    return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto_id))
+
+
+@projects_bp.route('/invitacion/<token>')
+def aceptar_invitacion(token):
+    from app.models import Invitation
+    invitacion = Invitation.query.filter_by(token=token, accepted=False).first_or_404()
+
+    # Guardar token en sesión para usarlo después del registro/login
+    from flask import session
+    session['invitation_token'] = token
+
+    # Si ya está logueado lo agregamos directo
+    if current_user.is_authenticated:
+        proyecto = invitacion.project
+        ya_participa = ProjectParticipant.query.filter_by(
+            project_id=proyecto.id, user_id=current_user.id
+        ).first()
+        if not ya_participa:
+            participante = ProjectParticipant(project_id=proyecto.id, user_id=current_user.id)
+            db.session.add(participante)
+            invitacion.accepted = True
+            db.session.commit()
+            flash(f'Te uniste al proyecto "{proyecto.name}".', 'success')
+        return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
+
+    # Si no está logueado, redirigir al registro
+    flash('Crea una cuenta o inicia sesión para aceptar la invitación.', 'success')
+    return redirect(url_for('auth.registro'))
