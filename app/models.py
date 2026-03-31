@@ -34,8 +34,7 @@ class Project(db.Model):
     producer = db.relationship('User', backref='projects')
     phases = db.relationship('Phase', backref='project', lazy=True, cascade='all, delete-orphan')
     participants = db.relationship('ProjectParticipant', backref='project', lazy=True, cascade='all, delete-orphan')
-    invitations = db.relationship('Invitation', backref='project', lazy=True, cascade='all, delete-orphan')
-
+    invitations = db.relationship('Invitation', lazy=True, cascade='all, delete-orphan')
 
 class ProjectParticipant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
