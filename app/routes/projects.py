@@ -213,13 +213,6 @@ def comentar(version_id):
     contenido = request.form.get('contenido', '').strip()
     if not contenido:
         return 'Vacío', 400
-    
-    # Notificar al productor si quien comenta es un artista
-    if current_user.id != proyecto.producer_id:
-        try:
-            enviar_notificacion_comentario(proyecto, version.phase, version, comentario, proyecto.producer.email)
-        except Exception as e:
-            print(f"ERROR EMAIL COMENTARIO: {e}")
 
     comentario = Comment(
         content=contenido,
@@ -228,6 +221,13 @@ def comentar(version_id):
     )
     db.session.add(comentario)
     db.session.commit()
+
+    # Notificar al productor si quien comenta es un artista
+    if current_user.id != proyecto.producer_id:
+        try:
+            enviar_notificacion_comentario(proyecto, version.phase, version, comentario, proyecto.producer.email)
+        except Exception as e:
+            print(f"ERROR EMAIL COMENTARIO: {e}")
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return 'ok', 200
