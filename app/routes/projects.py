@@ -185,10 +185,11 @@ def subir_version(fase_id):
 
     flash(f'Versión {numero} subida con éxito.', 'success')
     # Notificar a los artistas
+    # Notificar a los artistas
     try:
         enviar_notificacion_version(proyecto, fase, version, proyecto.participants)
-    except Exception:
-        pass  # Si falla el email no interrumpe la subida
+    except Exception as e:
+        print(f"ERROR EMAIL: {e}")
     return redirect(url_for('projects.ver_proyecto', proyecto_id=proyecto.id))
     
 # --- Agregar comentario ---
