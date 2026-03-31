@@ -66,7 +66,7 @@ class Version(db.Model):
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     uploader = db.relationship('User')
-    comments = db.relationship('Comment', backref='version', lazy=True)
+    comments = db.relationship('Comment', backref='version', lazy=True, cascade='all, delete-orphan')
 
 
 class Comment(db.Model):
