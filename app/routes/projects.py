@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from app.models import Project, ProjectParticipant, Phase, Version, User, Comment
 import cloudinary.uploader
 from app.email import enviar_notificacion_version
+from app.email import enviar_notificacion_version, enviar_notificacion_comentario
 
 projects_bp = Blueprint('projects', __name__)
 
@@ -212,6 +213,13 @@ def comentar(version_id):
     contenido = request.form.get('contenido', '').strip()
     if not contenido:
         return 'Vacío', 400
+    
+    # Notificar al productor si quien comenta es un artista
+    if current_user.id != proyecto.producer_id:
+        try:
+            enviar_notificacion_comentario(proyecto, version.phase, version, comentario, proyecto.producer.email)
+        except Exception as e:
+            print(f"ERROR EMAIL COMENTARIO: {e}")
 
     comentario = Comment(
         content=contenido,
