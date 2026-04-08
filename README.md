@@ -36,4 +36,10 @@ flask run
 
 ## Screenshots
 
+<img width="1920" height="1080" alt="Captura de pantalla 2026-04-08 011326" src="https://github.com/user-attachments/assets/00c05548-934e-4279-82af-ce4bbb90a8de" />
+<img width="1920" height="1080" alt="Captura de pantalla 2026-04-08 005737" src="https://github.com/user-attachments/assets/f2055292-7e91-4e29-8a08-f485357cdaea" />
+<img width="1920" height="1080" alt="Captura de pantalla 2026-04-08 010759" src="https://github.com/user-attachments/assets/617996b3-55ff-423e-8ae6-4b64e942e724" />
+<img width="1920" height="1080" alt="Captura de pantalla 2026-04-08 010946" src="https://github.com/user-attachments/assets/e88408a0-bdf1-4b32-98df-ff93a533d348" />
+
 <!-- Add 2-3 screenshots here — hace una diferencia enorme -->
+
